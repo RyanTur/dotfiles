@@ -25,6 +25,19 @@ vim.api.nvim_create_autocmd("LspAttach", {
         map("<leader>lf", vim.lsp.buf.format, "Format")
         map("<leader>v", "<cmd>vsplit | lua vim.lsp.buf.definition()<cr>", "Goto Definition in Vertical Split")
 
+        local client = vim.lsp.get_client_by_id(event.data.client_id)
+
+        -- Format on save if supported
+        if client and client.server_capabilities.documentFormattingProvider then
+            vim.api.nvim_create_autocmd("BufWritePre", {
+                group = vim.api.nvim_create_augroup("lsp-format-on-save", { clear = false }),
+                buffer = event.buf,
+                callback = function()
+                    vim.lsp.buf.format({ bufnr = event.buf })
+                end,
+            })
+        end
+
         local function client_supports_method(client, method, bufnr)
             if vim.fn.has 'nvim-0.11' == 1 then
                 return client:supports_method(method, bufnr)
@@ -33,7 +46,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
             end
         end
 
-        local client = vim.lsp.get_client_by_id(event.data.client_id)
         if client and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf) then
             local highlight_augroup = vim.api.nvim_create_augroup('lsp-highlight', { clear = false })
 
