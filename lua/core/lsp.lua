@@ -1,4 +1,5 @@
 vim.lsp.enable({
+    "ansible_ls",
     "clangd_ls",
     "yamlls_ls",
     "gopls",
